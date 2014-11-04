@@ -1,0 +1,29 @@
+task:										finished?
+connection									done
+getclients									
+disconnection									implemented
+more cmd						
+test		
+send msg									implemented
+get msg										implemented
+timeout for msg									implemented
+timeout for cg									implemented
+timeout for close								implemented
+handle clients quit without disconnect(back socket detectionn)			
+client auto disconnect after several timeouts					implemented
+remove client after timeout several times					implemented, can be better
+handle large sq number(mod)				
+test sq updating				
+thread number control								implemented for client
+thread number critical test
+test for reconnect
+msg size control
+printing instructions
+server save history to local file for better testing
+final optimization
+final protocol
+
+
+memo:
+1. now classes are in three different py files
+
