@@ -6,7 +6,7 @@ import thread
 
 
 class client:
-    def __init__(self, name, ip = "127.0.0.1" port = 43631):
+    def __init__(self, name, port):
         self.rcvBuffer = []             ## buffer for getMessage()
         self.sendingThreadCount = 0     ## count for current sending thread
         self.sqToServer = 0             ## sq# for th pck sending to server
@@ -15,7 +15,7 @@ class client:
         self.userName = name            ## userName displayed to server and other clinets
         self.connected = False
         
-        self.serverAddress = (ip, port)
+        self.serverAddress = ("10.45.1.37", port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("", 0))
         self.address = ("127.0.0.1", self.sock.getsockname()[1])
@@ -176,18 +176,17 @@ class client:
 
 
 def main():
-    cl = client("ye.sheng")
+    cl = client("ye's clock","10.45.1.37" ,43631)
     thread.start_new_thread( cl.handleMessages, ())
     time.sleep(2)
-    for i in range(13):
-        cl.sendMessage(str(i))
+    while True:
+        cl.sendMessage(str(time.strftime('%X %x %Z')))
+	time.sleep(60)
     time.sleep(5)
     cl.disconnectServer()
     time.sleep(2)
-    for msg in cl.rcvBuffer:
-        print msg[0] + ":" + msg[1]
 
-
+main()
 
 
 

@@ -1,6 +1,5 @@
 task:										finished?
 connection									done
-getclients									
 disconnection									implemented
 more cmd						
 test		
@@ -26,4 +25,6 @@ final protocol
 
 memo:
 1. now classes are in three different py files
+2. gui.py is for testing, the ip direct to my linux desktop
+3. default port for the server is 43631, default address is local address "127.0.0.1"
 

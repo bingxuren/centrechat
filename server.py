@@ -5,16 +5,21 @@ import time
 import thread
 
 class server:
-    def __init__(self):
+    def __init__(self, ip = "127.0.0.1", port = 43631):
         self.clients = []       ## a list of clientInfo
         self.globalSQ = 0
-        self.address = ("127.0.0.1", 0)
+        self.address = (ip, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.address)
         print self.sock.getsockname()[1]
         
 
-    ##def getClients(self):
+    def getClients(self):
+	l = []
+	for client in self.clients:
+		l.append(client.name)
+	l.sort()
+	return l
 
 
     def handleMessages(self):
@@ -79,8 +84,10 @@ class server:
         if (sq == tmpClient.SQ):
             tmpClient.SQ += 1  #################mod part not finished yet###
             self.broadcast(pck)
+            print "sendingACK"
             self.sock.sendto(ACK.getString(), clientAddress)
         if (sq < tmpClient.SQ):
+            print "sendingACK"
             self.sock.sendto(ACK.getString(), clientAddress)
         else:
             print "discard packet!"
@@ -124,7 +131,7 @@ class server:
             if (client.address == clientAddress):
                 if (int(pck.getSequenceNumber()) > client.ACK):
                     client.ACK = int(pck.getSequenceNumber())
-                    print "got an ACK¡¡from " + client.name
+                    print "got an ACK from " + client.name
                     break
 
 
@@ -132,7 +139,8 @@ class server:
 
 
 def main():
-    sv = server()
+    sv = server("10.45.1.37")
     sv.handleMessages()
 
-main()
+if __name__ == "__main__":
+	main()
