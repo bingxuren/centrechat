@@ -5,10 +5,10 @@ import time
 import thread
 
 class server:
-    def __init__(self, ip = "127.0.0.1", port = 43631):
+    def __init__(self, ip = "127.0.0.1"):
         self.clients = []       ## a list of clientInfo
         self.globalSQ = 0
-        self.address = (ip, port)
+        self.address = (ip, 43631)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.address)
         print self.sock.getsockname()[1]
@@ -139,7 +139,7 @@ class server:
 
 
 def main():
-    sv = server("10.45.1.37")
+    sv = server()
     sv.handleMessages()
 
 if __name__ == "__main__":

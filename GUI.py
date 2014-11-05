@@ -4,9 +4,9 @@ import time
 import thread
 import random
 
-code = random.randint(16386,32768)
+code = "YOUR NAME"
 
-c = client(str(code), "10.45.1.37" , 43631)########
+c = client(str(code), "10.45.1.37")########
 thread.start_new_thread(c.handleMessages, ())
 
 win = GraphWin("chat",600,600)
