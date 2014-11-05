@@ -9,7 +9,8 @@ code = "YOUR NAME"
 c = client(str(code), "10.45.1.37")########
 thread.start_new_thread(c.handleMessages, ())
 
-win = GraphWin("chat",600,600)
+win = GraphWin("chat",400,600)
+win.setCoords(0,600,600,0)
 textList = []
 for i in range(12):
     textList.append(Text(Point(300,50 + i * 45), ""))
