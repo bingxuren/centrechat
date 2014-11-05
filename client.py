@@ -6,7 +6,7 @@ import thread
 
 
 class client:
-    def __init__(self, name, ip = "127.0.0.1" port = 43631):
+    def __init__(self, name, ip = "127.0.0.1", port = 43631):
         self.rcvBuffer = []             ## buffer for getMessage()
         self.sendingThreadCount = 0     ## count for current sending thread
         self.sqToServer = 0             ## sq# for th pck sending to server
