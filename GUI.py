@@ -1,5 +1,8 @@
+##this is a simple GUI for testing
+
+
 from graphics import*
-from client import*
+from centreChat import*
 import time
 import thread
 import random
