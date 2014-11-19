@@ -7,7 +7,7 @@ import time
 import thread
 import random
 
-code = "YOUR NAME"
+code = raw_input("Please type your name: ")
 
 c = client(str(code), "10.45.1.37")########
 thread.start_new_thread(c.handleMessages, ())
