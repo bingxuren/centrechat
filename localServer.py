@@ -1,8 +1,6 @@
-#this is for seting up a server on local netowork
-#clients within the local network can connect to this server
 
+from centrechat import*
+import time
 
-from centreChat import*
-
-s = server("127.0.0.1")
-s.handleMessages()
+server = ChatServer(5051)
+server.handleMessages()

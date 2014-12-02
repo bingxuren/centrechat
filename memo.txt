@@ -2,28 +2,25 @@ task:										finished?
 connection									done
 disconnection									implemented
 more cmd						
-test		
+test										test.py	
 send msg									implemented
 get msg										implemented
 timeout for msg									implemented
 timeout for cg									implemented
 timeout for close								implemented
-handle clients quit without disconnect(back socket detectionn)			
+handle clients quit without disconnect(back socket detectionn)			don't really need it anymore
 client auto disconnect after several timeouts					implemented
 remove client after timeout several times					implemented, can be better
 handle large sq number(mod)									
 test sq updating								working fine			
 thread number control								implemented for client
-thread number critical test
+thread number critical test							tested
 test for reconnect
-msg size control
+msg size control								implemented
 printing instructions								finished
-server save history to local file for better testing
+server save history to local file for better testing				not going to do this
 final optimization
 final protocol
 
 
-memo:
-2. gui.py is for testing, the ip direct to my linux desktop
-3. default port for the server is 43631, default address is local address "127.0.0.1"
 

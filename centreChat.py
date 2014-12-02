@@ -2,7 +2,8 @@ import socket
 import select
 import time
 import thread
-
+import threading
+import random
 
 
 class packet:
@@ -96,11 +97,11 @@ class clientInfo:
 
 
 #---------------------------------------------------------------
-class server:
-    def __init__(self, ip = "127.0.0.1"):
+class ChatServer:
+    def __init__(self, port, ip = "127.0.0.1"):
         self.clients = []       ## a list of clientInfo
         self.globalSQ = 0
-        self.address = (ip, 43631)
+        self.address = (ip, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.address)
         print self.sock.getsockname()[1]
@@ -233,8 +234,10 @@ class server:
 
 #----------------------------------------------------------
 
-class client:
-    def __init__(self, name, ip = "127.0.0.1"):
+class ChatClient:
+    def __init__(self, ip, port, name):
+        self.lock = threading.RLock()
+        self.windowSize = 5             ## how many threads are used for sending messages
         self.rcvBuffer = []             ## buffer for getMessage()
         self.sendingThreadCount = 0     ## count for current sending thread
         self.sqToServer = 0             ## sq# for th pck sending to server
@@ -243,7 +246,7 @@ class client:
         self.userName = name            ## userName displayed to server and other clinets
         self.connected = False
         
-        self.serverAddress = (ip, 43631)
+        self.serverAddress = (ip, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("", 0))
         self.address = ("127.0.0.1", self.sock.getsockname()[1])
@@ -306,6 +309,9 @@ class client:
 
 
     def sendMessage(self,msg):
+        if len(msg) > 1000:
+            print "message too large"
+            return
         MSG = packet("MSG")
         MSG.setContent(msg)
         MSG.setSequenceNumber(str(self.sqToServer))
@@ -313,7 +319,7 @@ class client:
         MSG.setContentLength(len(MSG.getContent()))
         self.sqToServer += 1
         while True:
-            if ((int(MSG.getSequenceNumber()) - self.ackFromServer) < 5):####window size
+            if ((int(MSG.getSequenceNumber()) - self.ackFromServer) < self.windowSize):
                 print "\nsending:\n" + MSG.getString() + "\n"
                 thread.start_new_thread(self.thread_send, (MSG,))
                 break
@@ -323,6 +329,44 @@ class client:
                     time.sleep(0.5)
                 else:
                     return
+
+    def lossySend(self,msg):  # use lossy_thread_send
+        MSG = packet("MSG")
+        MSG.setContent(msg)
+        MSG.setSequenceNumber(str(self.sqToServer))
+        MSG.setSender(self.userName)
+        MSG.setContentLength(len(MSG.getContent()))
+        self.sqToServer += 1
+        while True:
+            if ((int(MSG.getSequenceNumber()) - self.ackFromServer) < self.windowSize):
+                print "\nsending:\n" + MSG.getString() + "\n"
+                thread.start_new_thread(self.lossy_thread_send, (MSG,))
+                break
+            else:
+                if self.connected:
+                    print "waiting for window"
+                    time.sleep(0.5)
+                else:
+                    return
+
+
+    def lossy_thread_send(self, msgPCK):
+        for i in range(6):  ##to have a better chance get all the messages sent
+            if (self.connected):
+                if random.randint(1,5) >= 3:
+                    self.sock.sendto(msgPCK.getString(),self.serverAddress)
+                time.sleep(1)## can work on this
+                if (self.ackFromServer >= int(msgPCK.getSequenceNumber())):
+                    print "\n" + "msg" + "  sent\n"
+                    return
+                print "\ntimeout, resend\n"
+            else:
+                print "not connected to server"
+                return
+        self.disconnect()
+
+
+
 
     def thread_send(self, msgPCK):
         for i in range(3):
@@ -336,7 +380,7 @@ class client:
             else:
                 print "not connected to server"
                 return
-        self.disconnectServer()
+        self.disconnect()
 
 
     def handleMessages(self):
@@ -365,6 +409,21 @@ class client:
         if (newACK > self.ackFromServer):
             self.ackFromServer = newACK
 
+    def getMessage(self):
+        ##print "locked by get"
+        self.lock.acquire()
+        if len(self.rcvBuffer) > 0:
+            toReturn = self.rcvBuffer[0]
+            self.rcvBuffer.remove(toReturn)
+            self.lock.release()
+            ##print "unlocked by get"
+            return toReturn
+        else:
+            self.lock.release()
+            ##print "unlocked by get"
+            return None
+    
+
     def handleMSG(self, pck):
         sq = int(pck.getSequenceNumber())
         ACK = packet("ACK")
@@ -373,7 +432,11 @@ class client:
         tmpMSG = (pck.getSender(), pck.getContent())
         if (sq == self.sqFromServer):
             self.sqFromServer += 1  #################mod part not finished yet###
+            ##print "locked by handle"
+            self.lock.acquire()##
             self.rcvBuffer.append(tmpMSG)
+            self.lock.release()##
+            ##print "unlocked by handle"
             print "\ngot a msg\n"
             print "sending a ack"
             ACK.setSequenceNumber(self.sqFromServer - 1)
@@ -384,7 +447,7 @@ class client:
         else:
             print "discard packet!"
 
-    def disconnectServer(self):
+    def disconnect(self):
         CMD = packet("CMD")
         CMD.setContent("disconnect")
         CMD.setContentLength(len(CMD.getContent()))
