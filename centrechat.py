@@ -62,7 +62,7 @@ class packet:
         return toReturn
 
 
-
+#format header content
 def parsePacket(pck):
     toReturn = packet(pck[:pck.find("\r\n")])
     if (pck.find("\r\nSequence-Number: ") != -1):
@@ -91,7 +91,7 @@ class clientInfo:
     def __init__(self, name, glSQ, address):
         self.name = name
         self.globalSQ = glSQ
-        self.ACK = -1
+        self.ACK = -1  #acknoledgement num is -1 by default, 0 is the first ack recieved
         self.SQ = 0
         self.address = address
 
@@ -107,6 +107,7 @@ class ChatServer:
         print self.sock.getsockname()[1]
         
 
+#gets all client names in alphabetical order
     def getClients(self):
 	l = []
 	for client in self.clients:
@@ -132,7 +133,7 @@ class ChatServer:
             if (pck.request == "ACK"):
                 self.handleACK(pck, clientAddress)
 
-
+#set up connection with client
     def handleCG(self, pck, clientAddress):
         CC = packet("CC")
         CC.setSequenceNumber(self.globalSQ)
@@ -143,7 +144,7 @@ class ChatServer:
 
         for client in self.clients:
             if client.address == tmpClient.address:
-                self.clients.remove(client)             ## danger action, work on this later
+                self.clients.remove(client)  
                 break
         self.clients.append(tmpClient)
         print pck.getUserName() + " connected to the server\n"
@@ -155,7 +156,7 @@ class ChatServer:
         self.sock.sendto(stringCLOSE, clientAddress)
         for client in self.clients:
             if client.address == clientAddress:
-                self.clients.remove(client)             ## danger action, work on this later
+                self.clients.remove(client)  
                 break
         print pck.getUserName() + " left\n"
 
@@ -164,6 +165,8 @@ class ChatServer:
         print "\nMSG from " + pck.getSender() + "\n"
         sq = int(pck.getSequenceNumber())
         tmpClient = None
+        #if the message is from an existing client, respond with correct ack
+        #otherwise discard message
         for client in self.clients:
             if (client.address == clientAddress):
                 tmpClient = client
@@ -176,14 +179,14 @@ class ChatServer:
         ##ACK.setSequenceNumber(sq)
         
         if (sq == tmpClient.SQ):
-            tmpClient.SQ += 1  #################mod part not finished yet###
+            tmpClient.SQ += 1
             self.broadcast(pck)
             print "sending ACK to " + pck.getSender() + "\n"
-            ACK.setSequenceNumber(tmpClient.SQ - 1)##
+            ACK.setSequenceNumber(tmpClient.SQ - 1)
             self.sock.sendto(ACK.getString(), clientAddress)
         if (sq < tmpClient.SQ):
             print "sending ACK to " + pck.getSender() + "\n"
-            ACK.setSequenceNumber(tmpClient.SQ - 1)##
+            ACK.setSequenceNumber(tmpClient.SQ - 1)
             self.sock.sendto(ACK.getString(), clientAddress)
         else:
             print "discard packet!"
@@ -196,7 +199,7 @@ class ChatServer:
 
     def threadBroadcast(self, pck, sq):
         tmpList = []
-        for client in self.clients:############concurrency, work on this
+        for client in self.clients:
             tmpList.append(client)
         for i in range(7):
             for client in tmpList:
@@ -431,11 +434,11 @@ class ChatClient:
         ##ACK.setSequenceNumber(sq)
         tmpMSG = (pck.getSender(), pck.getContent())
         if (sq == self.sqFromServer):
-            self.sqFromServer += 1  #################mod part not finished yet###
+            self.sqFromServer += 1
             ##print "locked by handle"
-            self.lock.acquire()##
+            self.lock.acquire()
             self.rcvBuffer.append(tmpMSG)
-            self.lock.release()##
+            self.lock.release()
             ##print "unlocked by handle"
             print "\ngot a msg\n"
             print "sending a ack"
@@ -453,18 +456,3 @@ class ChatClient:
         CMD.setContentLength(len(CMD.getContent()))
         self.sock.sendto(CMD.getString(), self.address)
         print "\nCMD sent for disconnecting\n"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
