@@ -1,3 +1,6 @@
+#NOTE:this tester is only for the current version, this may not work with other
+#students' code since we may handle connect and disconnect differently
+
 from centrechat import*
 import thread
 import time
@@ -12,6 +15,7 @@ for i in range(4):
     clientList.append(client)
     thread.start_new_thread(client.handleMessages,())
 
+#send radom message for testing
 for i in range(10):
     random.shuffle(clientList)
     clientList[0].lossySend(str(i))
@@ -25,6 +29,3 @@ for client in clientList:
     else:
         print "good"
 print "finished"
-
-
-    
